@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Voice Assistant</title>
+    <style>
+        body {
+            background-color: black;
+            text-align: center;
+            color: white;
+        }
+        h1 {
+            font-size: 32px;
+            margin-top: 120px;
+        }
+        button {
+            margin-top: 50px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #61dafb;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: yellow;
+        }
+        #response {
+            margin-top: 30px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Simple Voice Assistant</h1>
+    <button onclick="startRecognition()">Speak</button>
+    <div id="response"></div>
+
+    <script>
+        // Start speech recognition
+        function startRecognition() {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'en-US';
+
+            recognition.onresult = async (event) => {
+                const query = event.results[0][0].transcript;
+                const result = await getResponse(query);
+                document.getElementById('response').innerText = result;
+                speakResponse(result);
+            };
+
+            recognition.start();
+        }
+
+        // Fetch response from Gemini API
+        async function getResponse(query) {
+            try {
+                const res = await fetch('https://api.gemini.com/process', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'AIzaSyBGWr-4hzVw0Oj9x38z4ITBjps_rIciUBM' // Replace with your API key
+                    },
+                    body: JSON.stringify({ query })
+                });
+                const data = await res.json();
+                return data.response || 'No response available';
+            } catch (error) {
+                return 'Error connecting to the API';
+            }
+        }
+
+        // Speak the response
+        function speakResponse(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            window.speechSynthesis.speak(utterance);
+        }
+    </script>
+</body>
+</html>
